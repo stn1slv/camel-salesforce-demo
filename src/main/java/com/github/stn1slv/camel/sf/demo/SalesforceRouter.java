@@ -43,9 +43,13 @@ public class SalesforceRouter extends RouteBuilder {
             .bindingMode(RestBindingMode.json);      // Enable automatic JSON data binding
 
         // Define REST endpoint that responds to GET requests
-        rest()
-            .get("/contacts").id("Rest-based route") // Create GET endpoint at /contacts path
-            .to("direct:getContacts?synchronous=true"); // Route requests to direct:getContacts endpoint
+        rest("/contacts")
+            .get()
+                .id("Rest-based route") // Create GET endpoint at /contacts path
+                .to("direct:getContacts?synchronous=true") // Route requests to direct:getContacts endpoint
+            .get("/{id}")
+                .id("Rest-by-id-route") // Create GET endpoint with path parameter
+                .to("direct:getContactById?synchronous=true"); // Route requests to direct:getContactById endpoint
         
         // Define route that queries Salesforce contacts
         from("direct:getContacts")
@@ -55,9 +59,18 @@ public class SalesforceRouter extends RouteBuilder {
             // .to("log:debug?showAll=true&multiline=true")
             // Convert Salesforce response to JSON using Jackson library
             .unmarshal().json(JsonLibrary.Jackson);
+
+        // Define route that queries Salesforce contacts
+        from("direct:getContactById")
+            // Execute SOQL query to get Contact objects from Salesforce
+            .toD("salesforce:getSObject?sObjectName=Contact&sObjectId=${header.id}")
+            // Uncommented debug logging line
+            // .to("log:debug?showAll=true&multiline=true");
+            // Convert Salesforce response to JSON using Jackson library
+            .unmarshal().json(JsonLibrary.Jackson);
         
         // Define timer-based route that runs every 10 seconds
-        from("timer:fire?period=10000")                                     // Create timer trigger
+        from("timer:fire?period=60000")                                     // Create timer trigger
             .id("Scheduler-based route")                                     // Set route ID for monitoring
             .to("direct:getContacts?synchronous=true")                      // Call the same contacts query route
             .log(LoggingLevel.INFO, "Salesforce response: ${body}");    // Log the response
