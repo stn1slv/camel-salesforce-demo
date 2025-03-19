@@ -8,26 +8,30 @@ import org.springframework.stereotype.Component;
 
 /**
  * A Camel router class that integrates with Salesforce to fetch contact information.
- * This router sets up two main routes:
- * 1. A REST endpoint to get contacts via HTTP GET request
- * 2. A scheduled timer-based route that periodically fetches contacts
+ * This router sets up four main routes:
+ * 1. A REST endpoint to get all contacts via HTTP GET request
+ * 2. A REST endpoint to get a specific contact by ID
+ * 3. A Salesforce CDC event listener for Contact changes
+ * 4. A scheduled timer-based route that periodically fetches all contacts
  *
  * Key components:
  * - REST configuration: Sets up a servlet-based REST endpoint with JSON binding
- * - Salesforce query: Retrieves Contact objects with Id, Name, and Email fields
- * - Timer: Executes the contact fetch every 10 seconds
+ * - Salesforce queries: Retrieves Contact objects with Id, Name, and Email fields
+ * - CDC subscription: Listens for Contact change events in Salesforce
+ * - Timer: Executes the contact fetch every 60 seconds
  *
  * How it works:
- * - The REST endpoint "/contacts" can be called to get contact data on demand
- * - Both routes use a common direct endpoint "direct:getContacts"
- * - The Salesforce query results are automatically unmarshaled into JSON format
- * - The timer route logs the response at INFO level
+ * - The REST endpoint "/contacts" returns all contacts
+ * - The REST endpoint "/contacts/{id}" returns a specific contact
+ * - The CDC listener processes Contact change events from Salesforce
+ * - Routes use direct endpoints for synchronous execution
+ * - All Salesforce responses are unmarshaled into JSON format
  *
  * Note for beginners:
  * - @Component: Marks this class as a Spring component for automatic detection
  * - RestBindingMode.json: Automatically handles JSON conversion for REST endpoints
  * - synchronous=true: Ensures synchronous execution of the route
- * - direct: Creates an in-memory synchronous call between routes
+ * - direct: Creates in-memory synchronous calls between routes
  *
  * @see org.apache.camel.builder.RouteBuilder
  * @see org.springframework.stereotype.Component
