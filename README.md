@@ -73,11 +73,6 @@ The application runs two automated processes:
 - Queries all contacts every 60 seconds
 - Listens continuously for Contact Change Events (CDC)
 
-You can monitor these in the application logs:
-```bash
-tail -f logs/application.log
-```
-
 ## Project Structure
 
 - `SalesforceRouter.java`: Contains Camel route definitions
