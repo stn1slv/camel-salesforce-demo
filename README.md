@@ -22,17 +22,22 @@ A Spring Boot application demonstrating integration with Salesforce using Apache
    - Go to Setup > Apps > App Manager > New Connected App
    - Enable OAuth Settings
    - Set Callback URL (can be http://localhost:8080)
-   - Add 'Manage user data via APIs' to Selected OAuth Scopes
+   - Add 'Perform requests at any time' to Selected OAuth Scopes
    - Save and wait for activation
 
-2. Copy `src/main/resources/application.properties.example` to `src/main/resources/application.properties`
+2. Enable CDC events for Contact object:
+   - Go to Setup > Integrations > Change Data Capture
+   - Add `Contact (Contact)` to Selected Entities
+   - Save
 
-3. Update the properties with your Connected App credentials:
+3. Copy `src/main/resources/application.properties.example` to `src/main/resources/application.properties`
+
+4. Update the properties with your Connected App credentials:
 ```properties
 camel.component.salesforce.client-id=<YOUR_CLIENT_ID>         # Consumer Key from Connected App
 camel.component.salesforce.client-secret=<YOUR_CLIENT_SECRET> # Consumer Secret from Connected App
 camel.component.salesforce.instance-url=<YOUR_DOMAIN>         # e.g. https://your-org.my.salesforce.com
-camel.component.salesforce.login-url=<YOUR_DOMAIN>           # Same as instance-url
+camel.component.salesforce.login-url=<YOUR_DOMAIN>            # Same as instance-url
 ```
 
 ## Building
@@ -85,7 +90,3 @@ The application runs two automated processes:
 - Apache Camel 4.10.2
 - Camel Salesforce Component
 - Camel Spring Boot Components
-
-## License
-
-MIT License - see LICENSE file for details
