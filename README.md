@@ -4,7 +4,7 @@ A Spring Boot application demonstrating integration with Salesforce using Apache
 
 ## Features
 
-- REST API endpoint to fetch Salesforce contacts
+- REST API endpoints to fetch all Salesforce contacts and get contact by ID
 - Scheduled job that periodically retrieves contacts
 - Spring Boot and Apache Camel integration
 - Salesforce authentication using client credentials flow
@@ -44,10 +44,15 @@ The application will start on port 8080.
 ## Testing
 
 ### REST Endpoint
-To fetch contacts via the REST endpoint:
+To fetch all contacts via the REST endpoint:
 ```bash
 curl http://localhost:8080/camel/contacts
 ```
+To fetch a specific contact by ID:
+```bash
+curl http://localhost:8080/camel/contacts/{id}
+```
+Replace `{id}` with the actual Salesforce Contact ID.
 
 ### Scheduled Job
 The application automatically queries Salesforce contacts every 10 seconds and logs the results.

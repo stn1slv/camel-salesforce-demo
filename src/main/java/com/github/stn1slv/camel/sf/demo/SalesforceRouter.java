@@ -45,10 +45,10 @@ public class SalesforceRouter extends RouteBuilder {
         // Define REST endpoint that responds to GET requests
         rest("/contacts")
             .get()
-                .id("Rest-based route") // Create GET endpoint at /contacts path
+                .id("Rest-based route: all contacts") // Create GET endpoint at /contacts path
                 .to("direct:getContacts?synchronous=true") // Route requests to direct:getContacts endpoint
             .get("/{id}")
-                .id("Rest-by-id-route") // Create GET endpoint with path parameter
+                .id("Rest-based route: contact by id") // Create GET endpoint with path parameter
                 .to("direct:getContactById?synchronous=true"); // Route requests to direct:getContactById endpoint
         
         // Define route that queries Salesforce contacts
@@ -71,7 +71,7 @@ public class SalesforceRouter extends RouteBuilder {
         
         // Define timer-based route that runs every 10 seconds
         from("timer:fire?period=60000")                                     // Create timer trigger
-            .id("Scheduler-based route")                                     // Set route ID for monitoring
+            .id("Scheduler-based route: all contacts")                       // Set route ID for monitoring
             .to("direct:getContacts?synchronous=true")                      // Call the same contacts query route
             .log(LoggingLevel.INFO, "Salesforce response: ${body}");    // Log the response
     }
