@@ -18,13 +18,21 @@ A Spring Boot application demonstrating integration with Salesforce using Apache
 
 ## Configuration
 
-1. Copy `src/main/resources/application.properties.example` to `src/main/resources/application.properties`
-2. Update the following properties with your Salesforce credentials:
+1. Create a Connected App in your Salesforce org:
+   - Go to Setup > Apps > App Manager > New Connected App
+   - Enable OAuth Settings
+   - Set Callback URL (can be http://localhost:8080)
+   - Add 'Manage user data via APIs' to Selected OAuth Scopes
+   - Save and wait for activation
+
+2. Copy `src/main/resources/application.properties.example` to `src/main/resources/application.properties`
+
+3. Update the properties with your Connected App credentials:
 ```properties
-camel.component.salesforce.client-id=<YOUR_CLIENT_ID>
-camel.component.salesforce.client-secret=<YOUR_CLIENT_SECRET>
-camel.component.salesforce.instance-url=<YOUR_DOMAIN>
-camel.component.salesforce.login-url=<YOUR_DOMAIN>
+camel.component.salesforce.client-id=<YOUR_CLIENT_ID>         # Consumer Key from Connected App
+camel.component.salesforce.client-secret=<YOUR_CLIENT_SECRET> # Consumer Secret from Connected App
+camel.component.salesforce.instance-url=<YOUR_DOMAIN>         # e.g. https://your-org.my.salesforce.com
+camel.component.salesforce.login-url=<YOUR_DOMAIN>           # Same as instance-url
 ```
 
 ## Building
@@ -43,19 +51,32 @@ The application will start on port 8080.
 
 ## Testing
 
-### REST Endpoint
-To fetch all contacts via the REST endpoint:
+### REST Endpoints
+
+1. Fetch all contacts:
 ```bash
-curl http://localhost:8080/camel/contacts
+curl -X GET http://localhost:8080/camel/contacts | jq
 ```
-To fetch a specific contact by ID:
+
+2. Fetch a specific contact:
 ```bash
-curl http://localhost:8080/camel/contacts/{id}
+curl -X GET http://localhost:8080/camel/contacts/003XXXXXXXXXXXXXXX | jq
 ```
-Replace `{id}` with the actual Salesforce Contact ID.
+Replace `003XXXXXXXXXXXXXXX` with an actual Salesforce Contact ID.
+
+3. Monitor CDC events:
+   - Make changes to contacts in Salesforce
+   - Watch the application logs for real-time change events
 
 ### Scheduled Job
-The application automatically queries Salesforce contacts every 10 seconds and logs the results.
+The application runs two automated processes:
+- Queries all contacts every 60 seconds
+- Listens continuously for Contact Change Events (CDC)
+
+You can monitor these in the application logs:
+```bash
+tail -f logs/application.log
+```
 
 ## Project Structure
 

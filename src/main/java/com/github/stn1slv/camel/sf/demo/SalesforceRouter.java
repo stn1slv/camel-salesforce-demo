@@ -45,10 +45,10 @@ public class SalesforceRouter extends RouteBuilder {
         // Define REST endpoint that responds to GET requests
         rest("/contacts")
             .get()
-                .id("Rest-based route: all contacts") // Create GET endpoint at /contacts path
+                .id("Rest-based route: all contacts")       // Create GET endpoint at /contacts path
                 .to("direct:getContacts?synchronous=true") // Route requests to direct:getContacts endpoint
             .get("/{id}")
-                .id("Rest-based route: contact by id") // Create GET endpoint with path parameter
+                .id("Rest-based route: contact by id")          // Create GET endpoint with path parameter
                 .to("direct:getContactById?synchronous=true"); // Route requests to direct:getContactById endpoint
         
         // Define route that queries Salesforce contacts
@@ -68,6 +68,16 @@ public class SalesforceRouter extends RouteBuilder {
             // .to("log:debug?showAll=true&multiline=true");
             // Convert Salesforce response to JSON using Jackson library
             .unmarshal().json(JsonLibrary.Jackson);
+
+        // Define route that listens for Salesforce CDC events for Contact objects
+        from("salesforce:subscribe:data/ContactChangeEvent")
+            .id("Listener Salesforce CDC events") // Set route ID for monitoring
+            // Uncommented debug logging line
+            // .to("log:debug?showAll=true&multiline=true");
+            // Convert Salesforce response to JSON using Jackson library
+            .unmarshal().json(JsonLibrary.Jackson)
+            // Log the CDC event at INFO level
+            .log(LoggingLevel.INFO, "A new event: ${body}"); 
         
         // Define timer-based route that runs every 10 seconds
         from("timer:fire?period=60000")                                     // Create timer trigger
@@ -75,5 +85,4 @@ public class SalesforceRouter extends RouteBuilder {
             .to("direct:getContacts?synchronous=true")                      // Call the same contacts query route
             .log(LoggingLevel.INFO, "Salesforce response: ${body}");    // Log the response
     }
-    
 }
