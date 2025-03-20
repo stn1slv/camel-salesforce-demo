@@ -7,31 +7,31 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.springframework.stereotype.Component;
 
 /**
- * A Camel router class that integrates with Salesforce to fetch contact information.
- * This router sets up four main routes:
- * 1. A REST endpoint to get all contacts via HTTP GET request
- * 2. A REST endpoint to get a specific contact by ID
- * 3. A Salesforce CDC event listener for Contact changes
- * 4. A scheduled timer-based route that periodically fetches all contacts
+ * A Camel router class that integrates with Salesforce to manage contact information.
+ * This router implements five main routes:
+ * 1. REST GET endpoint to fetch all contacts
+ * 2. REST GET endpoint to retrieve a specific contact by ID
+ * 3. REST PUT endpoint to update a specific contact by ID
+ * 4. Salesforce CDC event listener for Contact changes
+ * 5. Scheduled timer-based route for periodic contact fetching
  *
- * Key components:
- * - REST configuration: Sets up a servlet-based REST endpoint with JSON binding
- * - Salesforce queries: Retrieves Contact objects with Id, Name, and Email fields
- * - CDC subscription: Listens for Contact change events in Salesforce
- * - Timer: Executes the contact fetch every 60 seconds
+ * Key features:
+ * - REST API: Servlet-based REST endpoints with JSON binding
+ * - CRUD Operations: Support for reading and updating Salesforce contacts
+ * - Real-time Updates: CDC (Change Data Capture) event monitoring
+ * - Scheduled Tasks: Automated periodic contact synchronization
  *
- * How it works:
- * - The REST endpoint "/contacts" returns all contacts
- * - The REST endpoint "/contacts/{id}" returns a specific contact
- * - The CDC listener processes Contact change events from Salesforce
- * - Routes use direct endpoints for synchronous execution
- * - All Salesforce responses are unmarshaled into JSON format
+ * Endpoints:
+ * - GET /contacts: Retrieves all contacts
+ * - GET /contacts/{id}: Retrieves a specific contact
+ * - PUT /contacts/{id}: Updates a specific contact
  *
- * Note for beginners:
- * - @Component: Marks this class as a Spring component for automatic detection
- * - RestBindingMode.json: Automatically handles JSON conversion for REST endpoints
- * - synchronous=true: Ensures synchronous execution of the route
- * - direct: Creates in-memory synchronous calls between routes
+ * Technical details:
+ * - Uses Spring @Component for dependency injection
+ * - Implements RestBindingMode.json for automatic JSON serialization
+ * - Leverages direct endpoints for synchronous route execution
+ * - Integrates with Salesforce using SOQL queries and CDC events
+ * - Employs Jackson for JSON data transformation
  *
  * @see org.apache.camel.builder.RouteBuilder
  * @see org.springframework.stereotype.Component
@@ -53,7 +53,10 @@ public class SalesforceRouter extends RouteBuilder {
                 .to("direct:getContacts?synchronous=true") // Route requests to direct:getContacts endpoint
             .get("/{id}")
                 .id("Rest-based route: contact by id")          // Create GET endpoint with path parameter
-                .to("direct:getContactById?synchronous=true"); // Route requests to direct:getContactById endpoint
+                .to("direct:getContactById?synchronous=true") // Route requests to direct:getContactById endpoint
+            .put("/{id}")
+                .id("Rest-based route: update contact by id")  // Create GET endpoint with path parameter
+                .to("direct:updateContactById?synchronous=true"); // Route requests to direct:updateContactById endpoint
         
         // Define route that queries Salesforce contacts
         from("direct:getContacts")
@@ -72,6 +75,17 @@ public class SalesforceRouter extends RouteBuilder {
             // .to("log:debug?showAll=true&multiline=true");
             // Convert Salesforce response to JSON using Jackson library
             .unmarshal().json(JsonLibrary.Jackson);
+        
+        // Define route that updates a Salesforce contact by ID
+        from("direct:updateContactById")
+            // Convert the input body to JSON format using Jackson library
+            .marshal().json(JsonLibrary.Jackson)
+            // Convert the JSON to String format for Salesforce update
+            .convertBodyTo(String.class)
+            // Uncommented debug logging line for troubleshooting
+            // .to("log:debug?showAll=true&multiline=true")
+            // Update the Contact object in Salesforce using the ID from the header
+            .toD("salesforce:updateSObject?sObjectName=Contact&sObjectId=${header.id}");
 
         // Define route that listens for Salesforce CDC events for Contact objects
         from("salesforce:subscribe:data/ContactChangeEvent")
@@ -83,7 +97,7 @@ public class SalesforceRouter extends RouteBuilder {
             // Log the CDC event at INFO level
             .log(LoggingLevel.INFO, "A new event: ${body}"); 
         
-        // Define timer-based route that runs every 10 seconds
+        // Define timer-based route that runs every 60 seconds
         from("timer:fire?period=60000")                                     // Create timer trigger
             .id("Scheduler-based route: all contacts")                       // Set route ID for monitoring
             .to("direct:getContacts?synchronous=true")                      // Call the same contacts query route

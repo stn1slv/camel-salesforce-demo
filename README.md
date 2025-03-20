@@ -4,7 +4,7 @@ A Spring Boot application demonstrating integration with Salesforce using Apache
 
 ## Features
 
-- REST API endpoints to fetch all Salesforce contacts and get contact by ID
+- REST API endpoints to fetch all Salesforce contacts, get contact by ID and update a contact by ID
 - Scheduled job that periodically retrieves contacts
 - Spring Boot and Apache Camel integration
 - Salesforce authentication using client credentials flow
@@ -69,7 +69,21 @@ curl -X GET http://localhost:8080/camel/contacts/003XXXXXXXXXXXXXXX | jq
 ```
 Replace `003XXXXXXXXXXXXXXX` with an actual Salesforce Contact ID.
 
-3. Monitor CDC events:
+3. Update a specific contact:
+```bash
+curl --location --request PUT 'http://localhost:8080/camel/contacts/003XXXXXXXXXXXXXXX' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "LastName": "Smith",
+    "FirstName": "John",
+    "Salutation": "Mr.",
+    "Email": "jsmith@gmail.com",
+    "Description": "Test description"
+}'
+``` 
+Replace `003XXXXXXXXXXXXXXX` with an actual Salesforce Contact ID.
+
+4. Monitor CDC events:
    - Make changes to contacts in Salesforce
    - Watch the application logs for real-time change events
 
