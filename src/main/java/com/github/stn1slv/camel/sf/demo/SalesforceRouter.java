@@ -55,7 +55,7 @@ public class SalesforceRouter extends RouteBuilder {
                 .id("Rest-based route: contact by id")          // Create GET endpoint with path parameter
                 .to("direct:getContactById?synchronous=true") // Route requests to direct:getContactById endpoint
             .put("/{id}")
-                .id("Rest-based route: update contact by id")  // Create GET endpoint with path parameter
+                .id("Rest-based route: update contact by id")  // Create PUT endpoint with path parameter
                 .to("direct:updateContactById?synchronous=true"); // Route requests to direct:updateContactById endpoint
         
         // Define route that queries Salesforce contacts
